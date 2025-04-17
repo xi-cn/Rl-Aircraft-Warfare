@@ -214,7 +214,7 @@ class Maze:
             elif self.level == 2 and self.score > 300000:
                 self.level = 3
                 # self.upgrade_sound.play()
-                # 增加5架小型敌机、3架中型敌机和2架大型敌机
+                # 增加15架小型敌机、10架中型敌机和5架大型敌机
                 self.add_small_enemies(self.small_enemies, self.enemies, 15)
                 self.add_mid_enemies(self.mid_enemies, self.enemies, 10)
                 self.add_big_enemies(self.big_enemies, self.enemies, 5)
@@ -224,7 +224,7 @@ class Maze:
             elif self.level == 3 and self.score > 600000:
                 self.level = 4
                 # self.upgrade_sound.play()
-                # 增加5架小型敌机、3架中型敌机和2架大型敌机
+                # 增加15架小型敌机、10架中型敌机和5架大型敌机
                 self.add_small_enemies(self.small_enemies, self.enemies, 15)
                 self.add_mid_enemies(self.mid_enemies, self.enemies, 10)
                 self.add_big_enemies(self.big_enemies, self.enemies, 5)
@@ -234,7 +234,7 @@ class Maze:
             elif self.level == 4 and self.score > 1000000:
                 self.level = 5
                 # self.upgrade_sound.play()
-                # 增加5架小型敌机、3架中型敌机和2架大型敌机
+                # 增加15架小型敌机、10架中型敌机和5架大型敌机
                 self.add_small_enemies(self.small_enemies, self.enemies, 15)
                 self.add_mid_enemies(self.mid_enemies, self.enemies, 10)
                 self.add_big_enemies(self.big_enemies, self.enemies, 5)
@@ -248,8 +248,12 @@ class Maze:
 
                 if action == 0:
                     self.me.moveLeft()
-                if action == 1:
+                elif action == 1:
                     self.me.moveRight()
+                elif action == 2:
+                    self.me.moveUp()
+                elif action == 3:
+                    self.me.moveDown()
                 
                 # 绘制全屏炸弹补给并检测是否获得
                 if self.bomb_supply.active:
@@ -270,7 +274,7 @@ class Maze:
                         self.is_double_bullet = True
                         pygame.time.set_timer(self.DOUBLE_BULLET_TIME, 18 * 1000)
                         self.bullet_supply.active = False
-                        reward += 2
+                        reward += self.reward[4]
                 
                 # 发射子弹
                 if not (self.delay % 10):
@@ -474,7 +478,7 @@ class Maze:
         score = self.score
         
         if reward == 0:
-            reward = self.reward[4]
+            reward = self.reward[5]
         
         return observation, reward, done, score
     
