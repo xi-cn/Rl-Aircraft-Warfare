@@ -1,9 +1,12 @@
-from TensorflowAgent import DQN_LSTM, DDPG
-from TensorflowAgent import DataWithTest
 import sys
 import os
 import cv2
 import numpy as np
+from model import DQN, DDQN, DuelingDQN, RainbowDQN
+from dataset import LSTM_Dataset, convert_image
+import argparse
+import yaml
+
 
 
 import tensorflow as tf
@@ -25,16 +28,6 @@ from game_env.maze_env import Maze
 # 切换工作目录
 os.chdir(env_dir)
 
-# 对图片预处理
-def convert_image(observation:np.ndarray):
-    # 通道转化
-    observation = cv2.cvtColor(observation, cv2.COLOR_RGB2BGR)
-    # 图片缩放
-    observation = cv2.resize(observation, (160, 160)).astype(np.float16)
-    # 归一化
-    observation = observation / 255.0
-    return observation
-
 
 def test():
     high_score = 0
@@ -45,7 +38,7 @@ def test():
         env = Maze()
         env.setStepBatchs(2)
         env.setTick(5000)
-        env.setReward((-5, 1, 2, 3, 0))
+        env.setReward(reward_config)
 
         observation, reward, done, score = env.reset()
         env.life_num = 1
@@ -105,25 +98,64 @@ import pandas as pd
 
 
 if __name__ == "__main__":
-    batch_size = 32
-    learning_rate = 0.001
-    interval=2
-    prev_num=20
-    forth_step=5
-    cover_step=500
-    test_num = 200
-    sample_ratio = (0.1, 0.4, 0.5)
+    parser = argparse.ArgumentParser()
+    # 参数
+    parser.add_argument('-config', help='配置文件名称')
+    # 解析参数
+    args = parser.parse_args()
 
-    model = DQN_LSTM(
-        n_actions=3,
+    config_file = args.config
+    # 读取配置文件
+    with open('../configs/{}.yaml'.format(config_file), 'r') as f:
+        config = yaml.safe_load(f)
+
+    model_name = config['model']
+    n_actions = config['n_actions']
+    gamma = config['gamma']
+    batch_size = config['batch_size']
+    learning_rate = config['learning_rate']
+    interval = config['interval']
+    prev_num = config['prev_num']
+    forth_step = config['forth_step']
+    cover_step = config['cover_step']
+    test_num = config['test_num']
+    train_step = config['train_step']
+    sample_ratio = config['sample_ratio']
+    reward_config = config['reward_config']
+    max_test_num = config['max_test_num']
+    max_neg_num = config['max_neg_num']
+
+    # 数据集加载器
+    data_loader = LSTM_Dataset(
+        interval=interval,
+        prev_num=prev_num,
+        sample_ration=sample_ratio,
+        forth_step=forth_step,
+        batch_size=batch_size,
+        max_test_num=max_test_num,
+        max_neg_num=max_neg_num
     )
 
-    model.target_net.build(input_shape=(None, 11, 160, 160, 3))
-    model.eval_net.build(input_shape=(None, 11, 160, 160, 3))
-    model.build(input_shape=(None, 11, 160, 160, 3))
+    # 配置模型
+    if model_name == 'DQN':
+        model = DQN(
+            n_actions,
+            gamma,
+            learning_rate
+        )
+    elif model_name == "DDQN":
+        model = DDQN(
+            n_actions,
+            gamma,
+            learning_rate
+        )
+
+    model.target_net.build(input_shape=(None, prev_num+1, 160, 160, 3))
+    model.eval_net.build(input_shape=(None, prev_num+1, 160, 160, 3))
+    model.build(input_shape=(None, prev_num+1, 160, 160, 3))
 
     try:
-        model.load_weights(f"../models/best_lstm_dqn.h5")
+        model.load_weights(f"../results/{model_name}/last.h5")
         print("模型权重加载成功")
     except:
         print("模型权重加载失败")
@@ -132,22 +164,22 @@ if __name__ == "__main__":
     average, higest, all_scores = test()
     print(f"average: [{average}]  highest: [{higest}]")
 
-    data = {
-        'model': 'dqn_lstm',
-        'interval': interval,
-        'prev_num': prev_num,
-        'forth_step': forth_step,
-        'cover_step': cover_step,
-        'negtive_ratio': sample_ratio[0],
-        'positive_ratio': sample_ratio[2],
-        'average': average,
-        'higest': higest,
-        'scores': ' '.join(all_scores)
-    }
+    # data = {
+    #     'model': 'dqn_lstm',
+    #     'interval': interval,
+    #     'prev_num': prev_num,
+    #     'forth_step': forth_step,
+    #     'cover_step': cover_step,
+    #     'negtive_ratio': sample_ratio[0],
+    #     'positive_ratio': sample_ratio[2],
+    #     'average': average,
+    #     'higest': higest,
+    #     'scores': ' '.join(all_scores)
+    # }
 
 
-    df = pd.read_csv("../score_up.csv", sep=',', index_col=0)
-    df.loc[3] = data
-    print(df)
+    # df = pd.read_csv("../score_up.csv", sep=',', index_col=0)
+    # df.loc[3] = data
+    # print(df)
 
-    df.to_csv('../score_36.csv', sep=',')
+    # df.to_csv('../score_36.csv', sep=',')

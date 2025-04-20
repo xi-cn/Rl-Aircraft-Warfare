@@ -1,7 +1,5 @@
 # main.py
 import pygame
-import sys
-import traceback
 import myplane
 import enemy
 import bullet
@@ -9,6 +7,9 @@ import supply
 
 from pygame.locals import *
 from random import *
+
+import os
+os.environ["SDL_AUDIODRIVER"] = "dummy"
 
 class Maze:
     

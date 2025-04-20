@@ -66,6 +66,11 @@ class DQN(Model):
 
         return net
     
+    def build(self, input_shape):
+        super().build(input_shape)
+        self.target_net.build(input_shape)
+        self.eval_net.build(input_shape)
+    
     def call(self, inputs):
         return self.eval_net(inputs)
     
@@ -114,6 +119,7 @@ class DQN(Model):
         gradients = tape.gradient(loss, self.eval_net.trainable_variables)
         # 更新权重
         self.optimizer.apply_gradients(zip(gradients, self.eval_net.trainable_variables))
+        return loss.cpu().numpy()
     
     # 覆盖网络
     def covergeTargetNet(self):

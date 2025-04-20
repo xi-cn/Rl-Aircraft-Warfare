@@ -72,7 +72,6 @@ class LSTM_Dataset:
 
         self.test_positive.append(np.array(test_positive))
         self.test_zero.append(np.array(test_zero))
-                
         
         # 更新测试数据总数
         self.test_num += len(images)
