@@ -1,0 +1,20 @@
+"model" : "DuelingDQN"
+"n_actions" : 5
+"gamma" : 0.9
+"batch_size" : 16
+"epochs" : 1000
+"learning_rate" : 0.001
+
+"interval" : 2
+"prev_num" : 10
+"forth_step" : 5
+"cover_step" : 500
+"test_num" : 50
+"pre_test_num": 50
+"train_step" : 300
+"sample_ratio" : [0.1, 0.4, 0.5]
+"reward_config": [-5, 1, 1.5, 2, 5, 0]
+"max_test_num" : 500000
+"max_neg_num" : 10000
+
+"num_workers" : 10

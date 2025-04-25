@@ -36,7 +36,6 @@ def worker(remote, MODEL, config):
 
         # 测试环境
         for it in range(config['test_num'] // config['num_workers']):
-
             # 初始化游戏环境
             env = Maze()
             env.setStepBatchs(2)
@@ -88,6 +87,9 @@ def worker(remote, MODEL, config):
             images, actions, rewards = np.array(images), np.array(actions), np.array(rewards)
             # 发送数据到主进程
             remote.send((images, actions, rewards, score_sum, reward_sum))
+            images = []
+            actions = []
+            rewards = []
 
 
 def start_worker(remote, MODEL, config):

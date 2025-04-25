@@ -214,6 +214,8 @@ if __name__ == "__main__":
         MODEL = DQN
     elif model_name == "DDQN":
         MODEL = DDQN
+    elif model_name == "DuelingDQN":
+        MODEL = DuelingDQN
 
     # 创建cpu模型副本
     with tf.device('CPU'):

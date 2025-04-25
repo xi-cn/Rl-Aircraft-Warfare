@@ -34,8 +34,8 @@ class DQN(Model):
 
         # greedy策略
         self.final_greedy = 0.99
-        self.greedy_steps = 300000
-        self.init_greedy = 0.01
+        self.greedy_steps = 10000
+        self.init_greedy = 0.1
         self.greedy_alpha=math.pow(self.final_greedy/self.init_greedy, 1/self.greedy_steps)
         self.greedy = self.init_greedy
 
@@ -182,7 +182,37 @@ class DuelingDQN(DQN):
         **kwargs
     ):
         super().__init__(n_actions, gamma, learning_rate, *args, **kwargs)
-    
+
+    # 构建网络
+    def build_net(self):
+
+        inputs = Input(shape=(None, 160, 160, 3))
+
+        output = base_net = Sequential([
+            TimeDistributed(Conv2D(32, (8, 8), strides=(4, 4), padding="same", activation='relu')),
+            TimeDistributed(MaxPooling2D(2, 2)),
+            TimeDistributed(Conv2D(64, (4, 4), strides=(2, 2), padding="same", activation='relu')),
+            TimeDistributed(MaxPooling2D(2, 2)),
+            TimeDistributed(Conv2D(64, (3, 3), strides=1, padding="same", activation='relu')),
+            TimeDistributed(Flatten()),
+            LSTM(512),
+        ])(inputs)
+        # state value
+        v_out = Dense(1)(output)
+        v_out = tf.tile(v_out, multiples=[1, self.n_actions])
+        # advanteage
+        a_out = Dense(self.n_actions)(output)
+        # advantage average
+        a_mean = tf.reduce_mean(a_out, axis=1)
+        a_mean = tf.expand_dims(a_mean, axis=1)
+        a_mean = tf.tile(a_mean, multiples=[1, self.n_actions])
+        a_out = a_out - a_mean
+
+        outputs = v_out + a_out
+
+        model = Model(inputs=inputs, outputs=outputs)
+        return model
+
 # Raingbow DQN
 class RainbowDQN(DQN):
     # 构造函数
@@ -195,3 +225,12 @@ class RainbowDQN(DQN):
         **kwargs
     ):
         super().__init__(n_actions, gamma, learning_rate, *args, **kwargs)
+
+if __name__ == "__main__":
+    import numpy as np
+    X = np.random.ranf(size=(8, 11, 160, 160, 3))
+
+    model = DuelingDQN(5)
+    y = model.target_net(X)
+    print(y)
+    print(y.shape)

@@ -155,7 +155,7 @@ if __name__ == "__main__":
     model.build(input_shape=(None, prev_num+1, 160, 160, 3))
 
     try:
-        model.load_weights(f"../results/{model_name}/last.h5")
+        model.load_weights(f"../results/{model_name}/avg.h5")
         print("模型权重加载成功")
     except:
         print("模型权重加载失败")

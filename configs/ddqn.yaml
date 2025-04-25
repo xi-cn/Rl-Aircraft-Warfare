@@ -6,7 +6,7 @@
 "learning_rate" : 0.001
 
 "interval" : 2
-"prev_num" : 20
+"prev_num" : 10
 "forth_step" : 5
 "cover_step" : 500
 "test_num" : 50
