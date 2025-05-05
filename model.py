@@ -110,8 +110,14 @@ class DQN(Model):
 
             batch_index = np.arange(q_next.shape[0], dtype=np.int32)
             q_next_max = tf.reduce_max(q_next, axis=1).cpu().numpy()
-            # 用实际替代
+
+            # # 游戏结束的样本
+            # done_sample = r == -5
+            # q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
+            # # 未结束的样本
+            # q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_max[~done_sample]
             q_target[batch_index, a] = r + self.gamma * q_next_max
+
             q_target = tf.convert_to_tensor(q_target)
             # 计算损失值
             loss = self.lossf(q_eval, q_target)
@@ -158,8 +164,14 @@ class DDQN(DQN):
 
             # 目标值
             q_next_target = q_next[batch_index, q_next_index]
-            # 将目标值覆盖到q_eval复制体上
+
+            # # 游戏结束的样本
+            # done_sample = r == -5
+            # q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
+            # # 未结束的样本
+            # q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_target[~done_sample]
             q_target[batch_index, a] = r + self.gamma * q_next_target
+
             q_target = tf.convert_to_tensor(q_target)
             # 计算损失值
             loss = self.lossf(q_eval, q_target)
@@ -168,6 +180,7 @@ class DDQN(DQN):
         gradients = tape.gradient(loss, self.eval_net.trainable_variables)
         # 更新权重
         self.optimizer.apply_gradients(zip(gradients, self.eval_net.trainable_variables))
+        return loss.cpu().numpy()
 
 
 # Dueling DQN
@@ -188,7 +201,7 @@ class DuelingDQN(DQN):
 
         inputs = Input(shape=(None, 160, 160, 3))
 
-        output = base_net = Sequential([
+        output = Sequential([
             TimeDistributed(Conv2D(32, (8, 8), strides=(4, 4), padding="same", activation='relu')),
             TimeDistributed(MaxPooling2D(2, 2)),
             TimeDistributed(Conv2D(64, (4, 4), strides=(2, 2), padding="same", activation='relu')),

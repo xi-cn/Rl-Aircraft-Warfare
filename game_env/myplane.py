@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class MyPlane(pygame.sprite.Sprite):
     def __init__(self, bg_size):
@@ -15,9 +16,10 @@ class MyPlane(pygame.sprite.Sprite):
             ])
         self.rect = self.image1.get_rect()
         self.width, self.height = bg_size[0], bg_size[1]
-        self.rect.left, self.rect.top = \
-                        (self.width - self.rect.width) // 2, \
-                        self.height - self.rect.height - 60
+        self.rect.left = random.randint(0, self.width - self.rect.width)
+        self.rect.top = random.randint(self.rect.height, self.height - self.rect.height - 60)
+        self.rect.top = self.height - self.rect.height - 60
+
         self.speed = 10
         self.active = True
         self.invincible = False

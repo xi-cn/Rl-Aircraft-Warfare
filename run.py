@@ -141,12 +141,14 @@ def run():
         t_bar.close()
         # 整理得分和奖励
         avg_s = sum(scores) / len(scores)
+        std_s = np.array(scores).std()
         high_s = max(scores)
         avg_r = sum(rewards) / len(rewards)
+        std_r = np.array(rewards).std()
         
         # 测试分数
         with open(f"./results/{model_name}/record.txt", 'a', encoding='utf-8') as f:
-            f.write(f"{avg_s} {high_s} {avg_r}\n")
+            f.write(f"{avg_s} {std_s} {high_s} {avg_r} {std_r}\n")
         print(f"model: {model_name} epoch: [{epoch}] avg: [{avg_s}] high: [{high_s}]  avg reward: [{avg_r}]")
         
         # 保存最好的模型
@@ -156,6 +158,7 @@ def run():
         if high_s > high_score:
             model.save_weights(f"./results/{model_name}/high.h5")
             high_score = high_s
+        model.save_weights(f"./results/{model_name}/last.h5")
         avg_reward = max(avg_reward, avg_r)
 
 

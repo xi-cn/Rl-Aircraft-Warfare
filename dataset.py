@@ -50,9 +50,10 @@ class LSTM_Dataset:
     
     # 新增数据集
     def addTestData(self, images, actions, rewards):
-        self.test_images.append(images)
-        self.test_actions.append(actions)
-        self.test_rewards.append(rewards)
+
+        if len(rewards) < self.prev + 10:
+            return
+        
         # 样本分类
         test_positive = []
         test_zero = []
@@ -70,11 +71,18 @@ class LSTM_Dataset:
                 self.negtive_reward.append(np.copy(rewards[i]))
                 break
 
+        
+        if len(test_zero) == 0:
+            return
+
         self.test_positive.append(np.array(test_positive))
         self.test_zero.append(np.array(test_zero))
-        
+        self.test_images.append(images)
+        self.test_actions.append(actions)
+        self.test_rewards.append(rewards)
         # 更新测试数据总数
         self.test_num += len(images)
+
         # 维护测试数据总量
         while self.test_num > self.max_test_num:
             self.test_num -= len(self.test_rewards[0])
@@ -90,6 +98,8 @@ class LSTM_Dataset:
             self.negtive_action.pop(0)
             self.negtive_image.pop(0)
             self.negtive_reward.pop(0)
+
+
     
     # 获取训练的数据
     def chooseTestData(self, index):
@@ -117,6 +127,7 @@ class LSTM_Dataset:
                 next_i = min(len(self.test_actions[game_index])-1, i+self.forth_step)
                 low_index = next_i - self.interval * self.prev_num
                 S_.append(self.test_images[game_index][low_index:next_i+1:self.interval])
+                
             # 负样本
             else:
                 i = np.random.choice(len(self.negtive_action), 1)[0]
@@ -124,8 +135,15 @@ class LSTM_Dataset:
                 S_.append(self.negtive_image[i][1])
                 A.append(self.negtive_action[i])
                 R.append(self.negtive_reward[i])
+                shape = self.negtive_image[i][1].shape
 
-        return np.array(S), np.array(R), np.array(A), np.array(S_)
+                    
+        S=np.array(S)
+        S_=np.array(S_)
+        R=np.array(R)
+        A=np.array(A)
+
+        return S, R, A, S_
 
     # 测试数据采样
     def test_sampling(self):

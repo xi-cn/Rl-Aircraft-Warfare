@@ -11,7 +11,7 @@ if gpus:
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
 
-def worker(remote, MODEL, config):
+def worker(remote, MODEL, config, evaluate=False):
     # 导入游戏运行环境
     sys.path.append("./game_env")
     from game_env.maze_env import Maze
@@ -28,6 +28,9 @@ def worker(remote, MODEL, config):
     )
     model.build(input_shape=(None, config['prev_num']+1, 160, 160, 3))
 
+    # 评估阶段greedy设置为1
+    if evaluate:
+        model.greedy = 1
 
     for epoch in range(config['epochs']):
         # 接收模型参数
@@ -50,6 +53,8 @@ def worker(remote, MODEL, config):
             images = []
             actions = []
             rewards = []
+            if evaluate:
+                estimate_q = []
 
             score_sum = 0
             reward_sum = 0
@@ -70,6 +75,9 @@ def worker(remote, MODEL, config):
                 observation, reward, done, score = env.step(action)
                 actions.append(action)
                 rewards.append(reward)
+                if evaluate:
+                    estimate_q.append(detail[action])
+
 
                 score_sum = score
                 reward_sum += reward
@@ -83,13 +91,21 @@ def worker(remote, MODEL, config):
                     images.append(observation)
                     actions.append(action)
                     rewards.append(reward)
+                    if evaluate:
+                        estimate_q.append(detail[action])
                     break
             images, actions, rewards = np.array(images), np.array(actions), np.array(rewards)
             # 发送数据到主进程
-            remote.send((images, actions, rewards, score_sum, reward_sum))
+            if evaluate:
+                remote.send((estimate_q[:-1], list(rewards)[:-1], score_sum, reward_sum))
+            else:
+                remote.send((images, actions, rewards, score_sum, reward_sum))
+
             images = []
             actions = []
             rewards = []
+            if evaluate:
+                estimate_q = []
 
 
 def start_worker(remote, MODEL, config):
