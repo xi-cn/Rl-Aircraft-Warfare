@@ -18,7 +18,7 @@ class MyPlane(pygame.sprite.Sprite):
         self.width, self.height = bg_size[0], bg_size[1]
         self.rect.left = random.randint(0, self.width - self.rect.width)
         self.rect.top = random.randint(self.rect.height, self.height - self.rect.height - 60)
-        self.rect.top = self.height - self.rect.height - 60
+        # self.rect.top = self.height - self.rect.height - 60
 
         self.speed = 10
         self.active = True

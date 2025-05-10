@@ -65,8 +65,8 @@ class LSTM_Dataset:
             elif rewards[i] < 0:
                 low_index = i - self.interval * self.prev_num
                 state = np.copy(images[low_index:i+1:self.interval])
-                next_state = np.copy(images[low_index+1:i+2:self.interval])
-                self.negtive_image.append((state, next_state))
+                # 最后一步没有next
+                self.negtive_image.append((state, state))
                 self.negtive_action.append(np.copy(actions[i]))
                 self.negtive_reward.append(np.copy(rewards[i]))
                 break

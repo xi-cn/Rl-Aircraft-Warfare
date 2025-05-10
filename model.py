@@ -111,12 +111,11 @@ class DQN(Model):
             batch_index = np.arange(q_next.shape[0], dtype=np.int32)
             q_next_max = tf.reduce_max(q_next, axis=1).cpu().numpy()
 
-            # # 游戏结束的样本
-            # done_sample = r == -5
-            # q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
-            # # 未结束的样本
-            # q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_max[~done_sample]
-            q_target[batch_index, a] = r + self.gamma * q_next_max
+            # 游戏结束的样本
+            done_sample = r == -5
+            q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
+            # 未结束的样本
+            q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_max[~done_sample]
 
             q_target = tf.convert_to_tensor(q_target)
             # 计算损失值
@@ -165,12 +164,11 @@ class DDQN(DQN):
             # 目标值
             q_next_target = q_next[batch_index, q_next_index]
 
-            # # 游戏结束的样本
-            # done_sample = r == -5
-            # q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
-            # # 未结束的样本
-            # q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_target[~done_sample]
-            q_target[batch_index, a] = r + self.gamma * q_next_target
+            # 游戏结束的样本
+            done_sample = r == -5
+            q_target[batch_index[done_sample], a[done_sample]] = r[done_sample]
+            # 未结束的样本
+            q_target[batch_index[~done_sample], a[~done_sample]] = r[~done_sample] + self.gamma * q_next_target[~done_sample]
 
             q_target = tf.convert_to_tensor(q_target)
             # 计算损失值

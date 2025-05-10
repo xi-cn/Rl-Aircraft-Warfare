@@ -10,7 +10,6 @@ from random import *
 
 import os
 os.environ["SDL_AUDIODRIVER"] = "dummy"
-
 class Maze:
     
     def __init__(self) -> None:
@@ -49,6 +48,7 @@ class Maze:
         self.gameover_font = pygame.font.Font("font/font.ttf", 48)
         self.again_image = pygame.image.load("images/again.png").convert_alpha()
         self.gameover_image = pygame.image.load("images/gameover.png").convert_alpha()
+
 
     def add_small_enemies(self, group1, group2, num):
         for i in range(num):
@@ -470,6 +470,7 @@ class Maze:
             
             pygame.display.flip()
             self.clock.tick(self.tick)
+
 
         # 游戏图像
         current_surface = pygame.display.get_surface()  
